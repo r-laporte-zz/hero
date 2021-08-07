@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Field, Form, ErrorMessage } from "formik";
 import SignupField from "./signup-field";
+import { signUp } from "../../lib/signup";
 
 const fields = {
   firstName: {
@@ -56,15 +57,28 @@ const validateFields = (values) => {
       errors[key] = field.invalid;
     }
   });
-  console.log(errors);
   return errors;
 };
 
 const SignupEmailUpdates = () => {
-  return (
+  const [result, setResult] = useState(null);
+
+  const onSubmit = async (values) => {
+    const data = await signUp(values);
+    setResult(JSON.stringify(data, null, 4));
+  };
+
+  return result ? (
+    <div>
+      <textarea value={result} readOnly rows="10" cols="50"/>
+      <br/>
+      <input type="button" value="RETURN" onClick={() => { setResult(null) }}/>
+    </div>
+  ) : (
     <div>
       <h1>Sign up for email updates</h1>
       <h4>*Indicates Required Field</h4>
+      <h5>(use "error" as first name to obtain fake api error result)</h5>
       <Formik
         initialValues={{
           firstName: "",
@@ -75,10 +89,7 @@ const SignupEmailUpdates = () => {
           comms: [],
         }}
         validate={validateFields}
-        onSubmit={async (values) => {
-          await new Promise((r) => setTimeout(r, 500));
-          alert(JSON.stringify(values, null, 2));
-        }}
+        onSubmit={onSubmit}
         render={({ errors, status, touched }) => (
           <Form>
             <div className="form-group">
